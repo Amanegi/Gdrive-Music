@@ -13,7 +13,7 @@ import java.util.*
 object DriveHelper {
     private lateinit var driveService: Drive
     private const val APPLICATION_NAME = "Gdrive Music"
-    const val APP_DRIVE_SCOPE = DriveScopes.DRIVE_METADATA_READONLY
+    const val APP_DRIVE_SCOPE = DriveScopes.DRIVE_READONLY
 
     fun getDriveService(context: Context): Drive {
         val googleSignInAccount = GoogleSignIn.getLastSignedInAccount(context)
