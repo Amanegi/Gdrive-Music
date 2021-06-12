@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Gdrive Music</string>
     <string name="logout">Logout</string>
+    <string name="music_folder_is_empty">Music folder is empty.</string>
 </resources>

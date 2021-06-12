@@ -7,6 +7,8 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
+import com.google.api.services.drive.model.File
+import com.google.api.services.drive.model.FileList
 import java.util.*
 
 
@@ -30,6 +32,32 @@ object DriveHelper {
             .setApplicationName(APPLICATION_NAME).build()
 
         return driveService
+    }
+
+    fun getMusicFolderId(drive: Drive): String {
+        val result: FileList = drive.files().list()
+            .setQ("mimeType = 'application/vnd.google-apps.folder'")
+            .setQ("name = 'Music'")
+            .setFields("files(id, name)")
+            .execute()
+        val files = result.files
+        if (files == null || files.isEmpty()) {
+            println("getMusicFolderId : No music folder found.")
+        } else {
+            val file = files[0]
+            println("getMusicFolderId : " + file.id)
+            return file.id
+        }
+        return ""
+    }
+
+    fun getSongList(drive: Drive): MutableList<File>? {
+        val musicFolderId = getMusicFolderId(drive)
+        val result: FileList = drive.files().list()
+            .setQ("'${musicFolderId}' in parents")
+            .setFields("files(id, name)")
+            .execute()
+        return result.files
     }
 
 

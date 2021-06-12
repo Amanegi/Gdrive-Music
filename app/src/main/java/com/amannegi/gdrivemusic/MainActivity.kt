@@ -2,67 +2,55 @@ package com.amannegi.gdrivemusic
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.amannegi.gdrivemusic.adapter.MainRecyclerViewAdapter
+import com.amannegi.gdrivemusic.databinding.ActivityMainBinding
 import com.amannegi.gdrivemusic.helper.DriveHelper
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.Scope
+import com.amannegi.gdrivemusic.helper.GoogleSignInHelper
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.api.services.drive.Drive
-import com.google.api.services.drive.model.FileList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
     private lateinit var drive: Drive
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         drive = DriveHelper.getDriveService(this)
 
-
         GlobalScope.launch {
-            val res = getMusicFolderId()
+            val files = DriveHelper.getSongList(drive)
             withContext(Dispatchers.Main) {
                 // run this on main thread
-                Toast.makeText(this@MainActivity, res, Toast.LENGTH_LONG).show()
+                binding.progressBar.visibility = View.GONE
+                if (files == null || files.isEmpty()) {
+                    binding.textView.visibility = View.VISIBLE
+                } else {
+                    val songsAdapter = MainRecyclerViewAdapter(files)
+                    binding.recyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
+                    binding.recyclerView.adapter = songsAdapter
+                    binding.recyclerView.visibility = View.VISIBLE
+                }
+
             }
         }
 
     }
 
-    private fun getMusicFolderId(): String {
-        val result: FileList = drive.files().list()
-            .setQ("mimeType = 'application/vnd.google-apps.folder'")
-            .setQ("name = 'Music'")
-            .setFields("files(id, name)")
-            .execute()
-        val files = result.files
-        if (files == null || files.isEmpty()) {
-            println("getMusicFolderId : No music folder found.")
-        } else {
-            val file = files[0]
-            println("getMusicFolderId : " + file.id)
-            return file.id
-        }
-        return "";
-    }
-
     private fun signOutFromApp() {
-        val gso =
-            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestScopes(Scope(DriveHelper.APP_DRIVE_SCOPE))
-                .requestEmail().build()
-        val mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+        val mGoogleSignInClient = GoogleSignInHelper().getGoogleSignInClient(this)
         // disconnect user's drive from app
         mGoogleSignInClient.revokeAccess().addOnSuccessListener {
             Toast.makeText(this, "Drive access revoked.", Toast.LENGTH_LONG).show()
