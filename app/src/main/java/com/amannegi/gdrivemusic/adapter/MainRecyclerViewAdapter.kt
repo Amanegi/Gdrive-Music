@@ -1,19 +1,25 @@
 package com.amannegi.gdrivemusic.adapter
 
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.amannegi.gdrivemusic.databinding.SongRowLayoutBinding
 import com.google.api.services.drive.model.File
-import kotlin.random.Random
 
-class MainRecyclerViewAdapter(private val files: MutableList<File>) :
+class MainRecyclerViewAdapter(
+    private val files: MutableList<File>,
+    private val itemCLickListener: ItemClickListener
+) :
     RecyclerView.Adapter<MainRecyclerViewAdapter.SongViewHolder>() {
 
     inner class SongViewHolder(private val binding: SongRowLayoutBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+        RecyclerView.ViewHolder(binding.root), View.OnClickListener {
+
+        init {
+            binding.root.setOnClickListener(this)
+        }
+
         fun bind(file: File) {
             var songName = file.name
             // remove .mp3 from end
@@ -24,6 +30,10 @@ class MainRecyclerViewAdapter(private val files: MutableList<File>) :
 //            val randomColor = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
 //            binding.songImage.background.setColorFilter(randomColor, PorterDuff.Mode.SRC_ATOP)
             binding.songImage.text = songName[0].toString()
+        }
+
+        override fun onClick(v: View) {
+            itemCLickListener.onClick(v, adapterPosition)
         }
     }
 
@@ -38,4 +48,8 @@ class MainRecyclerViewAdapter(private val files: MutableList<File>) :
     }
 
     override fun getItemCount(): Int = files.size
+
+    interface ItemClickListener {
+        fun onClick(view: View, position: Int)
+    }
 }

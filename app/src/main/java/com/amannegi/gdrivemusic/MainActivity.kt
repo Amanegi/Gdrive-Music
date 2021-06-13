@@ -38,7 +38,18 @@ class MainActivity : AppCompatActivity() {
                 if (files == null || files.isEmpty()) {
                     binding.textView.visibility = View.VISIBLE
                 } else {
-                    val songsAdapter = MainRecyclerViewAdapter(files)
+                    val itemClickListener =
+                        object : MainRecyclerViewAdapter.ItemClickListener {
+                            override fun onClick(view: View, position: Int) {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    files[position].name,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+
+                        }
+                    val songsAdapter = MainRecyclerViewAdapter(files, itemClickListener)
                     binding.recyclerView.layoutManager = LinearLayoutManager(this@MainActivity)
                     binding.recyclerView.adapter = songsAdapter
                     binding.recyclerView.visibility = View.VISIBLE

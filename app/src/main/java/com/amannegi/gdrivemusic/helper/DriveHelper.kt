@@ -60,5 +60,8 @@ object DriveHelper {
         return result.files
     }
 
+    fun getSong(drive: Drive, fileId: String) {
+        val result = drive.files().get(fileId).setAlt("media").executeMediaAsInputStream()
+    }
 
 }
